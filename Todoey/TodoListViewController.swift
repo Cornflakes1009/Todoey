@@ -15,9 +15,18 @@ import UIKit
 class TodoListViewController: UITableViewController {
 
     var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    
+    let defaults = UserDefaults.standard // setting a constandt equal to UserDefaults.standard so can run method calls.
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // checking if TodoListArray exists and then setting the items array as that value - this makes the app use the user default's saved data
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
     }
+    
     
     //Mark - Tableview Datasource Methods
     
@@ -27,6 +36,7 @@ class TodoListViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
         cell.textLabel?.text = itemArray[indexPath.row]
@@ -64,6 +74,10 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             
             self.itemArray.append(textField.text!)
+            
+            // method for adding to nsuserdefaults
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            
             self.tableView.reloadData() // reloads the tableView with the updated data
             
         }
