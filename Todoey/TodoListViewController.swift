@@ -16,28 +16,37 @@ class TodoListViewController: UITableViewController {
 
     var itemArray = [Item]()
     
-    let defaults = UserDefaults.standard // setting a constandt equal to UserDefaults.standard so can run method calls.
+    // creating our own plist file
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+//    let defaults = UserDefaults.standard // setting a constandt equal to UserDefaults.standard so can run method calls.
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
+        
+        print(dataFilePath!)
+        
         // checking if TodoListArray exists and then setting the items array as that value - this makes the app use the user default's saved data
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-        }
+//        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
+//            itemArray = items
+//        }
         
         let newItem = Item()
         
-        newItem.title = "find Mike"
-        itemArray.append(newItem)
+//        newItem.title = "find Mike"
+//        itemArray.append(newItem)
+//
+//        let newItem2 = Item()
+//        newItem2.title = "buy waffles"
+//        itemArray.append(newItem2)
+//
+//        let newItem3 = Item()
+//        newItem3.title = "destroy dimigorgon"
+//        itemArray.append(newItem3)
         
-        let newItem2 = Item()
-        newItem2.title = "buy waffles"
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.title = "destroy dimigorgon"
-        itemArray.append(newItem3)
+        loadItems()
     }
     
     
@@ -68,8 +77,7 @@ class TodoListViewController: UITableViewController {
 
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        
-        tableView.reloadData() // this reloads the data so it can update with the checkmarks
+        self.saveItems()
         
 //        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
 //            // method for removing accessory if checkmark is already on it and you click it again
@@ -82,6 +90,7 @@ class TodoListViewController: UITableViewController {
         
         
         tableView.deselectRow(at: indexPath, animated: true) // method makes the selected cell flash gray and goes back to default color
+        
         
         
     }
@@ -103,10 +112,9 @@ class TodoListViewController: UITableViewController {
             self.itemArray.append(newItem)
             
             // method for adding to nsuserdefaults
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+//            self.defaults.set(self.itemArray, forKey: "TodoListArray")
             
-            self.tableView.reloadData() // reloads the tableView with the updated data
-            
+            self.saveItems()
         }
         alert.addTextField { (alertTextField) in
             alertTextField.placeholder = "Create new item"
@@ -115,7 +123,31 @@ class TodoListViewController: UITableViewController {
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
-  
+    func saveItems() {
+        // this is a new object of type PropertyListEncoder
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("error encoding item array, \(error)")
+        }
+        
+        self.tableView.reloadData() // reloads the tableView with the updated data
+        
+    }
+    
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error coding is \(error)")
+            }
+        }
+    }
 }
 
 
